@@ -1,113 +1,71 @@
-const template = document.createElement('template');
+import { createElement } from "../utils/index.js";
 
-
-function getTemplate(title='Название карточки', cards=[]) {
-    const renderedCards = cards.map(body => `<app-card body="${body}"></app-card>`).join('');
-
-    const template = document.createElement('template');
-    template.innerHTML = `
-        <style>
-        .app__column {
-            margin-right: 12px;
-        }
-        
-        .column {
-            box-sizing: border-box;
-            width: 272px;
-            min-width: 272px;
-            max-height: 100%;
-            background: #DFE3E6;
-            border-radius: 3px;
-            padding: 8px 0 12px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .column__title {
-            font-family: Montserrat, serif;
-            font-style: normal;
-            font-weight: bold;
-            color: #000000;
-        
-            margin: 0 12px 12px;
-        }
-        
-        .cards-list {
-            overflow-y: scroll;
-        }
-        
-        .column-footer {
-            display: flex;
-            color: #6B808C;
-        }
-        
-        .column__column-footer {
-            padding: 0 12px;
-        }
-        
-        .icon-plus {
-            background: url(../images/plus.png);
-            height: 15px;
-            width: 15px;
-            display: block;
-            margin-right: 8px;
-        }
-        </style>
-        <div class="column app__column">
-            <div class="column__title">
-                ${title}
-            </div>
-            <div class="cards-list">
-                ${renderedCards}
-            </div>
-            <div class="column-footer column__column-footer">
-                <i class="icon-plus"></i>
-                <span class="">Добавить еще одну карточку</span>
-            </div>
-        </div>
-        `;
-
-    return template;
-}
 
 export class AppColumn extends HTMLElement {
-    constructor() {
-        super();
 
-        this._shadowRoot = this.attachShadow({mode: 'open'});
-        this._shadowRoot.appendChild(getTemplate().content.cloneNode(true));
+    get class() {
+        return this.getAttribute('class');
     }
 
-    static get observedAttributes() {
-        return ['title', 'cards'];
+    set class(val) {
+        this.setAttribute('class', val);
     }
 
     get title() {
-        return this.getAttribute('title')
+        return this._title;
     }
 
     set title(val) {
-        this.setAttribute('title', val)
+        this._title = val;
     }
 
     get cards() {
-        return this.getAttribute('cards')
+        return this._cards;
     }
 
     set cards(val) {
-        this.setAttribute('cards', val)
+        this._cards = val;
     }
 
-    _updateContent() {
-        while (this._shadowRoot.firstChild) {
-            this._shadowRoot.removeChild(this._shadowRoot.firstChild);
-        }
+    connectedCallback() {
         const title = this.title;
-        const cards = eval(this.cards);
-        this._shadowRoot.appendChild(getTemplate(title, cards).content.cloneNode(true));
+        const cards = this.cards;
+        this._render(title, cards);
+    }
+
+    _render(title, cards) {
+        while (this.firstChild) {
+            this.removeChild(this.firstChild);
+        }
+
+        const el =
+            createElement(
+                'div',
+                {class: 'column app__column'},
+                null,
+                [
+                    createElement('div', {class: 'column__title'}, null, [title]),
+                    createElement(
+                        'div',
+                        {class: 'cards-list'},
+                        null,
+                        cards.map(body => createElement('app-card', null, {body}))
+                    ),
+                    createElement(
+                        'div',
+                        {class: 'column-footer column__column-footer'},
+                        null,
+                        [
+                            createElement('i', {class: 'icon-plus'}),
+                            createElement('span', null, null, ["Добавить еще одну карточку"])
+                        ])
+
+
+                ]);
+        this.appendChild(el);
     }
 
     attributeChangedCallback(name, oldVal, newVal) {
-        this._updateContent();
+        this._render();
     }
 }

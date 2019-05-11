@@ -1,60 +1,109 @@
+import { createElement } from "./utils/index.js";
 import { AppCard } from "./components/card.js";
 import { AppColumn } from "./components/column.js";
 import columns from "./content.js";
 
 
-function getTemplate(columns) {
-    const renderedColumns = columns.map(column => {
-        const cards = JSON.stringify(column.cards);
-        const escapedCards = cards.replace(/"/g, "&quot;");
-        return `
-            <app-column class="column app__column"
-                        title="${column.title}"
-                        cards="${escapedCards}"
-            ></app-column>
-        `;
-    }).join('');
-    const template = document.createElement('template');
-    template.innerHTML = `
-        <style>
-        .app {
-            box-sizing: border-box;
-            padding: 20px;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            align-items: flex-start;
-            overflow-x: scroll;
-        }
-        .app__column {
-            margin-right: 12px;
-        }
-        
-        .column {
-            box-sizing: border-box;
-            width: 272px;
-            min-width: 272px;
-            max-height: 100%;
-            background: #DFE3E6;
-            border-radius: 3px;
-            padding: 8px 0 12px;
-            display: flex;
-            flex-direction: column;
-        }
-        </style>
-        <div class="app">
-            ${renderedColumns}        
-        </div>
-    `;
-
-    return template;
-}
-
 export class KanbanApp extends HTMLElement {
     constructor() {
         super();
-        this._shadowRoot = this.attachShadow({ mode: 'open' });
-        this._shadowRoot.appendChild(getTemplate(columns).content.cloneNode(true));
+        this._dragCard = {};
+        this.initDragable();
+    }
+
+    connectedCallback() {
+        this._render(columns);
+    }
+
+    _render(columns) {
+        while(this.firstChild) {
+            this.removeChild(this.firstChild)
+        }
+
+        const el =
+            createElement(
+                'div',
+                {class: 'app'},
+                null,
+                columns.map(column => createElement(
+                    'app-column',
+                    null,
+                    {title: column.title, cards: column.cards})
+                )
+            );
+        this.appendChild(el);
+    }
+
+    _getCoords(elem) {
+        const box = elem.getBoundingClientRect();
+        return {
+            width: box.width,
+            top: box.top + pageYOffset,
+            left: box.left + pageXOffset
+        };
+    }
+
+    initDragable() {
+        this.onmousedown = event => {
+            if (event.button !== 0) {
+                return;
+            }
+
+            const grabbedCard = event.target.closest('app-card');
+
+            if (!grabbedCard) {
+                return;
+            }
+
+            this._dragCard.elem = grabbedCard;
+            this._dragCard.nextSibling = grabbedCard.nextElementSibling;
+
+            const coords = this._getCoords(grabbedCard);
+            this._dragCard.shiftX = event.pageX - coords.left;
+            this._dragCard.shiftY = event.pageY - coords.top;
+            this._dragCard.width = coords.width;
+
+            this._dragCard.style = {
+                position: grabbedCard.style.position || '',
+                zIndex: grabbedCard.style.zIndex || '',
+                width: grabbedCard.style.width || ''
+            };
+            grabbedCard.style.position = 'absolute';
+            grabbedCard.style.zIndex = 100;
+            grabbedCard.style.width = coords.width + 'px';
+
+            this.onmousemove = (function(event) {
+                this._dragCard.elem.style.left = event.pageX - this._dragCard.shiftX + 'px';
+                this._dragCard.elem.style.top = event.pageY - this._dragCard.shiftY + 'px';
+            }).bind(this);
+
+            this.onmouseup = (function (event) {
+                const grabbedCard = this._dragCard.elem;
+
+                grabbedCard.style.display = 'none';
+                const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
+                grabbedCard.style.display = 'block';
+
+                const targetColumn = dropTarget.closest('app-column');
+
+                grabbedCard.style = this._dragCard.style;
+
+                if (!targetColumn) {
+                    const sourceColumn = grabbedCard.nextSibling.parentNode;
+                    sourceColumn.insertBefore(grabbedCard, grabbedCard.nextSibling);
+                    return;
+                }
+
+                grabbedCard.parentNode.removeChild(grabbedCard);
+                targetColumn.querySelector('.cards-list').appendChild(grabbedCard);
+                // targetColumn.appendChild(grabbedCard)
+                console.log(targetColumn.querySelectorAll('app-card'))
+
+                this.onmousemove = null;
+                this._dragCard = {};
+            }).bind(this);
+            // parentElement.insertBefore(newElement, referenceElement);
+        }
     }
 }
 

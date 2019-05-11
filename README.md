@@ -2,6 +2,6 @@
 
 Run project: 
 ```
-$npx serve
+$ npx serve
 ```
 It's necessary to start app using this command, otherwise JavaScript imports won't work.

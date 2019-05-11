@@ -18,3 +18,88 @@ html {
     -o-background-size: cover;
     background-size: cover;
 }
+
+.app {
+    box-sizing: border-box;
+    padding: 20px;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    overflow-x: scroll;
+}
+.app__column {
+    margin-right: 12px;
+}
+
+.column {
+    box-sizing: border-box;
+    width: 272px;
+    min-width: 272px;
+    max-height: 100%;
+    background: #DFE3E6;
+    border-radius: 3px;
+    padding: 8px 0 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.app__column {
+    margin-right: 12px;
+}
+
+.column {
+    box-sizing: border-box;
+    width: 272px;
+    min-width: 272px;
+    max-height: 100%;
+    background: #DFE3E6;
+    border-radius: 3px;
+    padding: 8px 0 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.column__title {
+    font-family: Montserrat, serif;
+    font-style: normal;
+    font-weight: bold;
+    color: #000000;
+
+    margin: 0 12px 12px;
+}
+
+.cards-list {
+    overflow-y: scroll;
+}
+
+.column-footer {
+    display: flex;
+    color: #6B808C;
+}
+
+.column__column-footer {
+    padding: 0 12px;
+}
+
+.icon-plus {
+    background: url(../images/plus.png);
+    height: 15px;
+    width: 15px;
+    display: block;
+    margin-right: 8px;
+}
+
+.card {
+    background: #FFFFFF;
+    box-shadow: 0px 1px 4px rgba(9, 45, 66, 0.25);
+    border-radius: 3px;
+}
+
+.cards-list__card {
+    margin: 0 12px 12px;
+}
+
+.card__content {
+    padding: 8px 12px;
+}
