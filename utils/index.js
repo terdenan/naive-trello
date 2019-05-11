@@ -28,3 +28,21 @@ export function createElement(type, attributes, properties, children) {
 
     return elem;
 }
+
+export function insertAfter(elem, refElem) {
+    var parent = refElem.parentNode;
+    var next = refElem.nextSibling;
+    if (next) {
+        return parent.insertBefore(elem, next);
+    } else {
+        return parent.appendChild(elem);
+    }
+}
+
+export function isHigherThanHalf(elem, event) {
+    const y = event.clientY;
+    const elemMeasures = elem.getBoundingClientRect();
+    const elemHalfY = elemMeasures.y + (elemMeasures.height - 12) / 2;
+
+    return y < elemHalfY;
+}

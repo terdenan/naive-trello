@@ -1,4 +1,7 @@
-import { createElement } from "./utils/index.js";
+import {
+    createElement,
+    insertAfter,
+    isHigherThanHalf } from "./utils/index.js";
 import { AppCard } from "./components/card.js";
 import { AppColumn } from "./components/column.js";
 import columns from "./content.js";
@@ -43,6 +46,21 @@ export class KanbanApp extends HTMLElement {
         };
     }
 
+    _findClosestCard(column, event) {
+        const x = event.clientX;
+        const y = event.clientY;
+        const cards = column.querySelectorAll('app-card');
+        let ans = cards[0] || null;
+
+        for (let card of cards) {
+            const currentY = card.getBoundingClientRect().y;
+            if (currentY > y) break;
+            ans = card;
+        }
+
+        return ans;
+    }
+
     initDragable() {
         this.onmousedown = event => {
             if (event.button !== 0) {
@@ -75,10 +93,17 @@ export class KanbanApp extends HTMLElement {
             this.onmousemove = (function(event) {
                 this._dragCard.elem.style.left = event.pageX - this._dragCard.shiftX + 'px';
                 this._dragCard.elem.style.top = event.pageY - this._dragCard.shiftY + 'px';
+
+                // const targetColumn = dropTarget.closest('app-column');
+                // if (!targetColumn) {
+                //     return;
+                // }
+                // const closestCard = this._findClosestCard(targetColumn, event);
             }).bind(this);
 
             this.onmouseup = (function (event) {
                 const grabbedCard = this._dragCard.elem;
+                grabbedCard.style = this._dragCard.style;
 
                 grabbedCard.style.display = 'none';
                 const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
@@ -86,23 +111,34 @@ export class KanbanApp extends HTMLElement {
 
                 const targetColumn = dropTarget.closest('app-column');
 
-                grabbedCard.style = this._dragCard.style;
-
                 if (!targetColumn) {
-                    const sourceColumn = grabbedCard.nextSibling.parentNode;
+                    const sourceColumn = grabbedCard.parentNode;
                     sourceColumn.insertBefore(grabbedCard, grabbedCard.nextSibling);
                     return;
                 }
 
                 grabbedCard.parentNode.removeChild(grabbedCard);
-                targetColumn.querySelector('.cards-list').appendChild(grabbedCard);
-                // targetColumn.appendChild(grabbedCard)
-                console.log(targetColumn.querySelectorAll('app-card'))
+
+                const closestCard = this._findClosestCard.call(this, targetColumn, event);
+                const insertionList = targetColumn.querySelector('.cards-list');
+
+                if (closestCard === null) {
+                    insertionList.appendChild(grabbedCard);
+                }
+                else {
+                    const isHigher = isHigherThanHalf(closestCard, event);
+                    console.log(isHigher, grabbedCard, closestCard)
+                    if (isHigher) {
+                        insertionList.insertBefore(grabbedCard, closestCard);
+                    }
+                    else {
+                        insertAfter(grabbedCard, closestCard)
+                    }
+                }
 
                 this.onmousemove = null;
                 this._dragCard = {};
             }).bind(this);
-            // parentElement.insertBefore(newElement, referenceElement);
         }
     }
 }
