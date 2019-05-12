@@ -44,20 +44,8 @@ html {
     flex-direction: column;
 }
 
-.app__column {
-    margin-right: 12px;
-}
-
-.column {
-    box-sizing: border-box;
-    width: 272px;
-    min-width: 272px;
-    max-height: 100%;
-    background: #DFE3E6;
-    border-radius: 3px;
-    padding: 8px 0 12px;
-    display: flex;
-    flex-direction: column;
+app-column {
+    height: 100%;
 }
 
 .column__title {
@@ -71,6 +59,8 @@ html {
 
 .cards-list {
     overflow-y: scroll;
+    display: grid;
+    grid-row-gap: 12px;
 }
 
 .column-footer {
@@ -79,7 +69,7 @@ html {
 }
 
 .column__column-footer {
-    padding: 0 12px;
+    padding: 12px 12px 0;
 }
 
 .icon-plus {
@@ -96,10 +86,25 @@ html {
     border-radius: 3px;
 }
 
+.card_grabbed {
+    position: absolute;
+    z-index: 100;
+}
+
 .cards-list__card {
-    margin: 0 12px 12px;
+    margin: 0 12px 0;
 }
 
 .card__content {
     padding: 8px 12px;
+}
+
+.blank-space {
+    background: #C9D2D9;
+    border-radius: 3px;
+    display: block;
+}
+
+.cards-list__blank-space {
+    margin: 0 12px 0;
 }
