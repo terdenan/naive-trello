@@ -2,6 +2,7 @@
     display: flex;
     background: #DFE3E6;
     color: #6B808C;
+    border-radius: 3px;
 }
 
 .column-footer_active {

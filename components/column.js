@@ -49,6 +49,7 @@ export class AppColumn extends HTMLElement {
 
         this._currentNewCard.editable = false;
         this._currentNewCard.body = cardBody;
+        this.insertCard({ body: cardBody });
 
         this._render();
         this._currentNewCard = null;
@@ -81,7 +82,7 @@ export class AppColumn extends HTMLElement {
         }
 
         this.footerIsActive = false;
-        this._addNewColumn(cardBody);
+        this.addNewColumn(cardBody);
     }
 
     _render() {

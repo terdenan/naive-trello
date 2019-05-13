@@ -34,11 +34,15 @@ export class KanbanApp extends HTMLElement {
 
     _addNewColumn(title) {
         this.columns[this.columns.length - 1] = { title };
-
         const newColumns = this.columns.slice()
         newColumns.push({editable: true});
-
         this.columns = newColumns;
+    }
+
+    _insertCard(columnIndex) {
+        return (function(card) {
+            this.columns[columnIndex].cards.push(card);
+        }).bind(this);
     }
 
     _render() {
@@ -57,7 +61,8 @@ export class KanbanApp extends HTMLElement {
                     {key: index},
                     {
                         ...column,
-                        addNewColumn: this._addNewColumn.bind(this)
+                        addNewColumn: this._addNewColumn.bind(this),
+                        insertCard: this._insertCard(index),
                     })
                 )
             );
