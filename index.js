@@ -13,6 +13,7 @@ export class KanbanApp extends HTMLElement {
     constructor() {
         super();
         this.columns = content;
+        this.columns.push({editable: true});
         this.initDraggable();
     }
 
@@ -41,6 +42,9 @@ export class KanbanApp extends HTMLElement {
 
     _insertCard(columnIndex) {
         return (function(card) {
+            if (this.columns[columnIndex].cards === undefined) {
+                this.columns[columnIndex].cards = [];
+            }
             this.columns[columnIndex].cards.push(card);
         }).bind(this);
     }
@@ -56,15 +60,17 @@ export class KanbanApp extends HTMLElement {
                 'div',
                 {class: 'app'},
                 null,
-                columns.map((column, index) => createElement(
-                    'app-column',
-                    {key: index},
-                    {
-                        ...column,
-                        addNewColumn: this._addNewColumn.bind(this),
-                        insertCard: this._insertCard(index),
-                    })
-                )
+                [
+                    ...columns.map((column, index) => createElement(
+                        'app-column',
+                        {key: index},
+                        {
+                            ...column,
+                            addNewColumn: this._addNewColumn.bind(this),
+                            insertCard: this._insertCard(index),
+                        })
+                    )
+                ]
             );
 
         this.appendChild(el);
