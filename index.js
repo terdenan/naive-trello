@@ -206,6 +206,7 @@ export class KanbanApp extends HTMLElement {
                 }
                 // Restoring grabbed card
                 const grabbedCard = this._dragCard.elem;
+                const grabbedCardKey = parseInt(grabbedCard.getAttribute('key'));
                 grabbedCard.classList.remove('card_grabbed')
                 grabbedCard.style = this._dragCard.style;
 
@@ -213,26 +214,34 @@ export class KanbanApp extends HTMLElement {
                 const closestCard = this._findClosestCard.call(this, targetColumn, grabbedCard, event);
                 const insertionList = targetColumn.querySelector('.cards-list');
 
-                sourceColumn.cards = leftCards;
                 const sourceAttributes = grabbedCard.sourceAttributes();
+                const sourceColumnKey = parseInt(sourceColumn.getAttribute('key'));
+                const targetColumnKey = parseInt(targetColumn.getAttribute('key'));
+
                 if (closestCard === null) {
+                    sourceColumn.cards = leftCards;
+                    this.columns[sourceColumnKey].cards = leftCards;
                     targetColumn.cards = [sourceAttributes];
+                    this.columns[targetColumnKey].cards = [sourceAttributes];
                 }
                 else {
                     const isHigher = isHigherThanHalf(closestCard, event);
-                    const closestCardKey = parseInt(closestCard.getAttribute('key'));
+                    let closestCardKey = parseInt(closestCard.getAttribute('key'));
+                    sourceColumn.cards = leftCards;
+                    this.columns[sourceColumnKey].cards = leftCards;
                     const newCards = targetColumn.cards.slice();
-
+                    if (targetColumn === sourceColumn && grabbedCardKey < closestCardKey) {
+                        closestCardKey -= 1;
+                    }
                     if (isHigher || closestCard.editable) {
                         newCards.splice(closestCardKey , 0, sourceAttributes);
                     }
                     else {
                         newCards.splice(closestCardKey + 1, 0, sourceAttributes);
                     }
-
                     targetColumn.cards = newCards;
+                    this.columns[targetColumnKey].cards = newCards;
                 }
-
                 this._removeBlankSpace();
 
                 this.onmousemove = null;

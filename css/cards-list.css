@@ -1,0 +1,13 @@
+.cards-list {
+    overflow-y: scroll;
+    display: grid;
+    grid-row-gap: 12px;
+}
+
+.cards-list__card {
+    margin: 0 12px 0;
+}
+
+.cards-list__blank-space {
+    margin: 0 12px 0;
+}

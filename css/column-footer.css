@@ -1,0 +1,22 @@
+.column-footer {
+    display: flex;
+    background: #DFE3E6;
+    color: #6B808C;
+}
+
+.column-footer_active {
+    justify-content: space-between;
+    align-items: center;
+}
+
+.column-footer:hover {
+    background: #c2c5c8;
+}
+
+.column-footer_active:hover {
+    background: #DFE3E6;
+}
+
+.column-footer__icon {
+    margin-right: 8px;
+}

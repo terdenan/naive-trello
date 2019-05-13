@@ -1,15 +1,9 @@
-* {
-    margin: 0;
-    padding: 0;
-    font-family: Montserrat, sans-serif;
-    font-size: 13px;
-    line-height: 19px;
-}
+@import "reset.css";
+@import "column.css";
+@import "cards-list.css";
+@import "card.css";
+@import "column-footer.css";
 
-@font-face {
-    font-family: Montserrat;
-    src: url("../fonts/Montserrat.ttf");
-}
 
 html {
     background: url(../images/background.png) no-repeat center center fixed;
@@ -28,71 +22,13 @@ html {
     align-items: flex-start;
     overflow-x: scroll;
 }
-.app__column {
-    margin-right: 12px;
-}
 
-.column {
+.app__column {
     box-sizing: border-box;
     width: 272px;
     min-width: 272px;
     max-height: 100%;
-    background: #DFE3E6;
-    border-radius: 3px;
-    display: flex;
-    flex-direction: column;
-}
-
-app-column {
-    height: 100%;
-}
-
-.column__title {
-    font-family: Montserrat, serif;
-    font-style: normal;
-    font-weight: bold;
-    color: #000000;
-    padding-top: 8px;
-    margin: 0 12px;
-}
-
-.cards-list {
-    overflow-y: scroll;
-    display: grid;
-    grid-row-gap: 12px;
-}
-
-.column__cards-list {
-    margin-top: 12px;
-}
-
-.column__cards-list:empty {
-    margin-top: 0;
-}
-
-.column-footer {
-    display: flex;
-    background: #DFE3E6;
-    color: #6B808C;
-}
-
-.column-footer_active {
-    justify-content: space-between;
-    align-items: center;
-}
-
-.column-footer:hover {
-    background: #c2c5c8;
-}
-
-.column-footer_active:hover {
-    background: #DFE3E6;
-}
-
-.column__column-footer {
-    box-sizing: border-box;
-    padding: 12px;
-    min-height: 43px;
+    margin-right: 12px;
 }
 
 .icon {
@@ -107,10 +43,6 @@ app-column {
 
 .icon-cross {
     background: url(../images/cross.png);
-}
-
-.column-footer__icon {
-    margin-right: 8px;
 }
 
 .button {
@@ -134,49 +66,8 @@ app-column {
     outline:0;
 }
 
-.card {
-    background: #FFFFFF;
-    box-shadow: 0px 1px 4px rgba(9, 45, 66, 0.25);
-    border-radius: 3px;
-}
-
-.card_grabbed {
-    position: absolute;
-    z-index: 100;
-}
-
-.cards-list__card {
-    margin: 0 12px 0;
-}
-
-.card__content {
-    padding: 8px 12px;
-}
-
-.card__input {
-    box-sizing: border-box;
-    width: 248px;
-    min-height: 54px;
-    border: none;
-    padding: 8px 6px 8px 12px;
-}
-
-.card__input:empty:before {
-    content: attr(placeholder);
-    display: block;
-    color: #B8B9BB;
-}
-
-.card__input:focus {
-    outline: none;
-}
-
 .blank-space {
     background: #C9D2D9;
     border-radius: 3px;
     display: block;
-}
-
-.cards-list__blank-space {
-    margin: 0 12px 0;
 }

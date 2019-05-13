@@ -1,0 +1,33 @@
+.card {
+    background: #FFFFFF;
+    box-shadow: 0px 1px 4px rgba(9, 45, 66, 0.25);
+    border-radius: 3px;
+}
+
+.card_grabbed {
+    position: absolute;
+    z-index: 100;
+    transform: rotate(5deg);
+}
+
+.card__content {
+    padding: 8px 12px;
+}
+
+.card__input {
+    box-sizing: border-box;
+    width: 248px;
+    min-height: 54px;
+    border: none;
+    padding: 8px 6px 8px 12px;
+}
+
+.card__input:empty:before {
+    content: attr(placeholder);
+    display: block;
+    color: #B8B9BB;
+}
+
+.card__input:focus {
+    outline: none;
+}
