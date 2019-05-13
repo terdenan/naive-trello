@@ -81,7 +81,7 @@ export class AppColumn extends HTMLElement {
         }
 
         this.footerIsActive = false;
-        this.addNewColumn(cardBody);
+        this._addNewColumn(cardBody);
     }
 
     _render() {

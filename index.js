@@ -13,7 +13,7 @@ export class KanbanApp extends HTMLElement {
     constructor() {
         super();
         this.columns = content;
-        this.initDragable();
+        this.initDraggable();
     }
 
     connectedCallback() {
@@ -25,14 +25,19 @@ export class KanbanApp extends HTMLElement {
     }
 
     set columns(val) {
+        const isInitial = this.columns === undefined;
         this._columns = val;
-        this._render();
+        if (!isInitial) {
+            this._render();
+        }
     }
 
-    addNewColumn(title) {
+    _addNewColumn(title) {
         this.columns[this.columns.length - 1] = { title };
+
         const newColumns = this.columns.slice()
         newColumns.push({editable: true});
+
         this.columns = newColumns;
     }
 
@@ -42,7 +47,6 @@ export class KanbanApp extends HTMLElement {
         }
 
         const columns = this.columns;
-
         const el =
             createElement(
                 'div',
@@ -53,14 +57,15 @@ export class KanbanApp extends HTMLElement {
                     {key: index},
                     {
                         ...column,
-                        addNewColumn: this.addNewColumn.bind(this)
+                        addNewColumn: this._addNewColumn.bind(this)
                     })
                 )
             );
+
         this.appendChild(el);
     }
 
-    _getCoords(elem) {
+    _getElemBoundaries(elem) {
         const box = elem.getBoundingClientRect();
         return {
             width: box.width,
@@ -71,39 +76,41 @@ export class KanbanApp extends HTMLElement {
     }
 
     _findClosestCard(column, grabbedCard, event) {
-        const y = event.clientY;
+        const currentY = event.clientY;
+
         const cards = Array.prototype.filter.call(
             column.querySelectorAll('app-card'),
             elem => elem !== grabbedCard
         );
-
-        let ans = cards[0] || null;
+        let closestCard = cards[0] || null;
 
         for (let card of cards) {
-            if (card === grabbedCard || card.editable) continue;
-            const currentY = card.getBoundingClientRect().y;
-            if (currentY > y) break;
-            ans = card;
+            if (card.editable) {
+                continue;
+            }
+            const cardY = card.getBoundingClientRect().y;
+            if (cardY > currentY) break;
+            closestCard = card;
         }
 
-        return ans;
+        return closestCard;
     }
 
     _findClosestColumn(event) {
-        const x = event.clientX;
+        const currentX = event.clientX;
         const columns = this.querySelectorAll('app-column');
-        let ans = columns[0] || null;
+        let closestColumn = columns[0] || null;
 
         for (let column of columns) {
             if (column.editable) {
                 continue;
             }
-            const currentX = column.getBoundingClientRect().x;
-            if (currentX > x) break;
-            ans = column;
+            const cardX = column.getBoundingClientRect().x;
+            if (cardX > currentX) break;
+            closestColumn = column;
         }
 
-        return ans;
+        return closestColumn;
     }
 
     _removeBlankSpace() {
@@ -144,7 +151,13 @@ export class KanbanApp extends HTMLElement {
         this._currentBlankSpace = newBlankSpace;
     }
 
-    initDragable() {
+    _updateColumn(column, cards) {
+        const columnKey = parseInt(column.getAttribute('key'));
+        column.cards = cards;
+        this.columns[columnKey].cards = cards;
+    }
+
+    initDraggable() {
         this._dragCard = {};
         this._currentBlankSpace = null;
 
@@ -161,42 +174,41 @@ export class KanbanApp extends HTMLElement {
                 return;
             }
 
-            // Storing grabbed card
-            const coords = this._getCoords(grabbedCard);
-            this._dragCard = {
-                elem: grabbedCard,
-                nextSibling: grabbedCard.nextElementSibling,
-
-                shiftX: event.pageX - coords.left,
-                shiftY: event.pageY - coords.top,
-                width: coords.width,
-                height: coords.height,
-            };
-
-            this._dragCard.style = {
-                position: grabbedCard.style.position || '',
-                zIndex: grabbedCard.style.zIndex || '',
-                width: grabbedCard.style.width || ''
-            };
-
-            this._insertBlankSpace(event);
-
-            grabbedCard.classList.add('card_grabbed');
-            grabbedCard.style.width = coords.width + 'px';
-            grabbedCard.style.left = event.pageX - this._dragCard.shiftX + 'px';
-            grabbedCard.style.top = event.pageY - this._dragCard.shiftY + 'px';
-
-            const grabbedCardKey = parseInt(grabbedCard.getAttribute('key'))
+            const grabbedCardKey = parseInt(grabbedCard.getAttribute('key'));
             const leftCards = sourceColumn.cards.filter((card, index) => {
                 return index !== grabbedCardKey;
             });
 
+            // Storing grabbed card
+            const grabbedCardBoundaries = this._getElemBoundaries(grabbedCard);
+            this._dragCard = {
+                elem: grabbedCard,
+                nextSibling: grabbedCard.nextElementSibling,
 
-            this.onmousemove = (function(event) {
-                const grabbedCard = this._dragCard.elem;
+                shiftX: event.pageX - grabbedCardBoundaries.left,
+                shiftY: event.pageY - grabbedCardBoundaries.top,
+                width: grabbedCardBoundaries.width,
+                height: grabbedCardBoundaries.height,
+                stlye: {
+                    position: grabbedCard.style.position || '',
+                    zIndex: grabbedCard.style.zIndex || '',
+                    width: grabbedCard.style.width || ''
+                }
+            };
+
+            this._insertBlankSpace(event);
+
+            function moveTo(event) {
                 grabbedCard.style.left = event.pageX - this._dragCard.shiftX + 'px';
                 grabbedCard.style.top = event.pageY - this._dragCard.shiftY + 'px';
+            }
 
+            grabbedCard.classList.add('card_grabbed');
+            grabbedCard.style.width = grabbedCardBoundaries.width + 'px';
+            moveTo.call(this, event)
+
+            this.onmousemove = (function(event) {
+                moveTo.call(this, event);
                 this._insertBlankSpace(event);
             }).bind(this);
 
@@ -205,30 +217,24 @@ export class KanbanApp extends HTMLElement {
                     return;
                 }
                 // Restoring grabbed card
-                const grabbedCard = this._dragCard.elem;
-                const grabbedCardKey = parseInt(grabbedCard.getAttribute('key'));
                 grabbedCard.classList.remove('card_grabbed')
                 grabbedCard.style = this._dragCard.style;
 
                 const targetColumn = this._findClosestColumn(event);
-                const closestCard = this._findClosestCard.call(this, targetColumn, grabbedCard, event);
-                const insertionList = targetColumn.querySelector('.cards-list');
+                const closestCard = this._findClosestCard(targetColumn, grabbedCard, event);
 
                 const sourceAttributes = grabbedCard.sourceAttributes();
-                const sourceColumnKey = parseInt(sourceColumn.getAttribute('key'));
-                const targetColumnKey = parseInt(targetColumn.getAttribute('key'));
 
                 if (closestCard === null) {
-                    sourceColumn.cards = leftCards;
-                    this.columns[sourceColumnKey].cards = leftCards;
-                    targetColumn.cards = [sourceAttributes];
-                    this.columns[targetColumnKey].cards = [sourceAttributes];
+                    this._updateColumn(sourceColumn, leftCards);
+                    this._updateColumn(targetColumn, [sourceAttributes])
                 }
                 else {
                     const isHigher = isHigherThanHalf(closestCard, event);
                     let closestCardKey = parseInt(closestCard.getAttribute('key'));
-                    sourceColumn.cards = leftCards;
-                    this.columns[sourceColumnKey].cards = leftCards;
+
+                    this._updateColumn(sourceColumn, leftCards);
+
                     const newCards = targetColumn.cards.slice();
                     if (targetColumn === sourceColumn && grabbedCardKey < closestCardKey) {
                         closestCardKey -= 1;
@@ -239,11 +245,11 @@ export class KanbanApp extends HTMLElement {
                     else {
                         newCards.splice(closestCardKey + 1, 0, sourceAttributes);
                     }
-                    targetColumn.cards = newCards;
-                    this.columns[targetColumnKey].cards = newCards;
-                }
-                this._removeBlankSpace();
 
+                    this._updateColumn(targetColumn, newCards)
+                }
+
+                this._removeBlankSpace();
                 this.onmousemove = null;
                 this._dragCard = {};
             }).bind(this);
