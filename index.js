@@ -6,23 +6,42 @@ import { AppCard } from "./components/card.js";
 import { AppColumn } from "./components/column.js";
 import { BlankSpace } from "./components/blankSpace.js";
 import { ColumnFooter } from "./components/columnFooter.js";
-import columns from "./content.js";
+import content from "./content.js";
 
 
 export class KanbanApp extends HTMLElement {
     constructor() {
         super();
+        this.columns = content;
         this.initDragable();
     }
 
     connectedCallback() {
-        this._render(columns);
+        this._render();
     }
 
-    _render(columns) {
+    get columns() {
+        return this._columns;
+    }
+
+    set columns(val) {
+        this._columns = val;
+        this._render();
+    }
+
+    addNewColumn(title) {
+        this.columns[this.columns.length - 1] = { title };
+        const newColumns = this.columns.slice()
+        newColumns.push({editable: true});
+        this.columns = newColumns;
+    }
+
+    _render() {
         while(this.firstChild) {
             this.removeChild(this.firstChild)
         }
+
+        const columns = this.columns;
 
         const el =
             createElement(
@@ -32,7 +51,10 @@ export class KanbanApp extends HTMLElement {
                 columns.map((column, index) => createElement(
                     'app-column',
                     {key: index},
-                    {title: column.title, cards: column.cards})
+                    {
+                        ...column,
+                        addNewColumn: this.addNewColumn.bind(this)
+                    })
                 )
             );
         this.appendChild(el);
@@ -73,6 +95,9 @@ export class KanbanApp extends HTMLElement {
         let ans = columns[0] || null;
 
         for (let column of columns) {
+            if (column.editable) {
+                continue;
+            }
             const currentX = column.getBoundingClientRect().x;
             if (currentX > x) break;
             ans = column;

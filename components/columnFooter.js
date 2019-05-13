@@ -24,10 +24,6 @@ export class ColumnFooter extends HTMLElement {
         }
     }
 
-    // toggleActive() {
-    //     this.active = !this.active;
-    // }
-
     attributeChangedCallback(name, oldVal, newVal) {
         this._render();
     }
@@ -48,23 +44,13 @@ export class ColumnFooter extends HTMLElement {
                         createElement(
                             'button',
                             {class: 'button'},
-                            {
-                                onclick: () => {
-                                    this.createCard();
-                                    //this.toggleActive();
-                                }
-                            },
-                            ['Добавить карточку']
+                            {onclick: () => this.buttonClick()},
+                            [this.buttonText]
                         ),
                         createElement(
                             'i',
                             {class: 'icon icon-cross'},
-                            {
-                                onclick: () => {
-                                    this.removeNewCard();
-                                    //this.toggleActive()
-                                }
-                            }
+                            {onclick: () => this.crossClick()}
                         ),
                     ]
                 );
@@ -74,29 +60,13 @@ export class ColumnFooter extends HTMLElement {
                 createElement(
                     'div',
                     {class: 'column-footer column__column-footer'},
-                    {
-                        onclick: () => {
-                            this.addNewCard();
-                            //this.toggleActive();
-                        }
-                    },
+                    {onclick: () => this.footerClick()},
                     [
                         createElement('i', {class: 'icon icon-plus column-footer__icon'}),
-                        createElement('span', null, null, ["Добавить еще одну карточку"])
+                        createElement('span', null, null, [this.spanText])
                     ]
                 );
         }
-
-        // el =
-        //     createElement(
-        //         'div',
-        //         {class: 'column-footer column__column-footer'},
-        //         null,
-        //         [
-        //             createElement('i', {class: 'icon-plus'}),
-        //             createElement('span', null, null, ["Добавить еще одну карточку"])
-        //         ]
-        //     );
 
         this.appendChild(el);
     }

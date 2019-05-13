@@ -39,7 +39,6 @@ html {
     max-height: 100%;
     background: #DFE3E6;
     border-radius: 3px;
-    padding-top: 8px;
     display: flex;
     flex-direction: column;
 }
@@ -53,14 +52,22 @@ app-column {
     font-style: normal;
     font-weight: bold;
     color: #000000;
-
-    margin: 0 12px 12px;
+    padding-top: 8px;
+    margin: 0 12px;
 }
 
 .cards-list {
     overflow-y: scroll;
     display: grid;
     grid-row-gap: 12px;
+}
+
+.column__cards-list {
+    margin-top: 12px;
+}
+
+.column__cards-list:empty {
+    margin-top: 0;
 }
 
 .column-footer {

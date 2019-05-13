@@ -18,5 +18,8 @@ export default [
             { body: "Пройти курс по React" },
             { body: "Отметить день рождения" }
         ]
+    },
+    {
+        editable: true
     }
 ];

@@ -52,3 +52,11 @@ export function isHigherThanHalf(elem, event) {
 
     return y < elemHalfY;
 }
+
+export function obj2str(obj) {
+    let res = '';
+    for (let prop in obj) {
+        res += `${prop}: ${obj[prop]};`
+    }
+    return res;
+}

@@ -1,4 +1,4 @@
-import { createElement } from "../utils/index.js";
+import { createElement, obj2str } from "../utils/index.js";
 
 
 export class AppCard extends HTMLElement {
@@ -40,6 +40,8 @@ export class AppCard extends HTMLElement {
 
         let el;
         if (this.editable) {
+            const inputStyles = this.inputStyles || {};
+            const placeholder = this.placeholder || 'Введите название карточки';
             el = createElement(
                 'div',
                 {class: 'card cards-list__card'},
@@ -50,7 +52,8 @@ export class AppCard extends HTMLElement {
                         {
                             class: 'card__input',
                             contentEditable: true,
-                            placeholder: 'Введите название карточки'
+                            placeholder: placeholder,
+                            style: obj2str(inputStyles)
                         },
                         null
                     )
