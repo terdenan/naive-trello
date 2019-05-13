@@ -3,6 +3,12 @@ export function createElement(type, attributes, properties, children) {
 
     if (attributes) {
         for (let key in attributes) {
+            if (typeof attributes[key] === 'boolean') {
+                if (attributes[key]) {
+                    elem.setAttribute(key, '');
+                }
+                continue;
+            }
             elem.setAttribute(key, attributes[key]);
         }
     }

@@ -39,7 +39,7 @@ html {
     max-height: 100%;
     background: #DFE3E6;
     border-radius: 3px;
-    padding: 8px 0 12px;
+    padding-top: 8px;
     display: flex;
     flex-direction: column;
 }
@@ -65,19 +65,66 @@ app-column {
 
 .column-footer {
     display: flex;
+    background: #DFE3E6;
     color: #6B808C;
 }
 
+.column-footer_active {
+    justify-content: space-between;
+    align-items: center;
+}
+
+.column-footer:hover {
+    background: #c2c5c8;
+}
+
+.column-footer_active:hover {
+    background: #DFE3E6;
+}
+
 .column__column-footer {
-    padding: 12px 12px 0;
+    box-sizing: border-box;
+    padding: 12px;
+    min-height: 43px;
+}
+
+.icon {
+    height: 15px;
+    width: 15px;
+    display: block;
 }
 
 .icon-plus {
     background: url(../images/plus.png);
-    height: 15px;
-    width: 15px;
-    display: block;
+}
+
+.icon-cross {
+    background: url(../images/cross.png);
+}
+
+.column-footer__icon {
     margin-right: 8px;
+}
+
+.button {
+    background: #39C071;
+    border-radius: 3px;
+    padding: 7px 8px 4px;
+    color: #FFFFFF;
+    font-weight: bold;
+    border: none;
+}
+
+.button:hover {
+    background: #37b164;
+}
+
+.button:active {
+    background: #37a356;
+}
+
+.button:focus {
+    outline:0;
 }
 
 .card {
@@ -97,6 +144,24 @@ app-column {
 
 .card__content {
     padding: 8px 12px;
+}
+
+.card__input {
+    box-sizing: border-box;
+    width: 248px;
+    min-height: 54px;
+    border: none;
+    padding: 8px 6px 8px 12px;
+}
+
+.card__input:empty:before {
+    content: attr(placeholder);
+    display: block;
+    color: #B8B9BB;
+}
+
+.card__input:focus {
+    outline: none;
 }
 
 .blank-space {

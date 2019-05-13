@@ -11,27 +11,67 @@ export class AppCard extends HTMLElement {
         this._body = val;
     }
 
-    connectedCallback() {
-        const body = this.body;
-        this._render(body);
+    get editable() {
+        return this._editable || false;
     }
 
-    _render(body) {
+    set editable(val) {
+        this._editable = val;
+        this._render();
+    }
+
+    connectedCallback() {
+        this._render();
+    }
+
+    sourceAttributes() {
+        return {
+            body: this.body,
+            editable: this.editable
+        }
+    }
+
+    _render() {
         while (this.firstChild) {
             this.removeChild(this.firstChild);
         }
-        const el = createElement(
-            'div',
-            {class: 'card cards-list__card'},
-            null,
-            [
-                createElement(
-                    'div',
-                    {class: 'card__content'},
-                    null,
-                    [body])
-            ]
-        );
+
+        const body = this.body;
+
+        let el;
+        if (this.editable) {
+            el = createElement(
+                'div',
+                {class: 'card cards-list__card'},
+                null,
+                [
+                    createElement(
+                        'div',
+                        {
+                            class: 'card__input',
+                            contentEditable: true,
+                            placeholder: 'Введите название карточки'
+                        },
+                        null
+                    )
+                ]
+            );
+        }
+        else {
+            el = createElement(
+                'div',
+                {class: 'card cards-list__card'},
+                null,
+                [
+                    createElement(
+                        'div',
+                        {class: 'card__content'},
+                        null,
+                        [body]
+                    )
+                ]
+            );
+        }
         this.appendChild(el);
     }
 }

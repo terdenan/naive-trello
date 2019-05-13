@@ -5,6 +5,7 @@ import {
 import { AppCard } from "./components/card.js";
 import { AppColumn } from "./components/column.js";
 import { BlankSpace } from "./components/blankSpace.js";
+import { ColumnFooter } from "./components/columnFooter.js";
 import columns from "./content.js";
 
 
@@ -28,9 +29,9 @@ export class KanbanApp extends HTMLElement {
                 'div',
                 {class: 'app'},
                 null,
-                columns.map(column => createElement(
+                columns.map((column, index) => createElement(
                     'app-column',
-                    null,
+                    {key: index},
                     {title: column.title, cards: column.cards})
                 )
             );
@@ -57,7 +58,7 @@ export class KanbanApp extends HTMLElement {
         let ans = cards[0] || null;
 
         for (let card of cards) {
-            if (card === grabbedCard) continue;
+            if (card === grabbedCard || card.editable) continue;
             const currentY = card.getBoundingClientRect().y;
             if (currentY > y) break;
             ans = card;
@@ -106,7 +107,7 @@ export class KanbanApp extends HTMLElement {
         }
         else {
             const isHigher = isHigherThanHalf(closestCard, event);
-            if (isHigher) {
+            if (isHigher || closestCard.editable) {
                 insertionList.insertBefore(newBlankSpace, closestCard);
             }
             else {
@@ -129,7 +130,9 @@ export class KanbanApp extends HTMLElement {
             }
 
             const grabbedCard = event.target.closest('app-card');
-            if (!grabbedCard) {
+            const sourceColumn = event.target.closest('app-column');
+
+            if (!grabbedCard || grabbedCard.editable) {
                 return;
             }
 
@@ -158,6 +161,12 @@ export class KanbanApp extends HTMLElement {
             grabbedCard.style.left = event.pageX - this._dragCard.shiftX + 'px';
             grabbedCard.style.top = event.pageY - this._dragCard.shiftY + 'px';
 
+            const grabbedCardKey = parseInt(grabbedCard.getAttribute('key'))
+            const leftCards = sourceColumn.cards.filter((card, index) => {
+                return index !== grabbedCardKey;
+            });
+
+
             this.onmousemove = (function(event) {
                 const grabbedCard = this._dragCard.elem;
                 grabbedCard.style.left = event.pageX - this._dragCard.shiftX + 'px';
@@ -179,17 +188,24 @@ export class KanbanApp extends HTMLElement {
                 const closestCard = this._findClosestCard.call(this, targetColumn, grabbedCard, event);
                 const insertionList = targetColumn.querySelector('.cards-list');
 
+                sourceColumn.cards = leftCards;
+                const sourceAttributes = grabbedCard.sourceAttributes();
                 if (closestCard === null) {
-                    insertionList.appendChild(grabbedCard);
+                    targetColumn.cards = [sourceAttributes];
                 }
                 else {
                     const isHigher = isHigherThanHalf(closestCard, event);
-                    if (isHigher) {
-                        insertionList.insertBefore(grabbedCard, closestCard);
+                    const closestCardKey = parseInt(closestCard.getAttribute('key'));
+                    const newCards = targetColumn.cards.slice();
+
+                    if (isHigher || closestCard.editable) {
+                        newCards.splice(closestCardKey , 0, sourceAttributes);
                     }
                     else {
-                        insertAfter(grabbedCard, closestCard)
+                        newCards.splice(closestCardKey + 1, 0, sourceAttributes);
                     }
+
+                    targetColumn.cards = newCards;
                 }
 
                 this._removeBlankSpace();
@@ -203,6 +219,7 @@ export class KanbanApp extends HTMLElement {
 
 
 customElements.define('blank-space', BlankSpace);
+customElements.define('column-footer', ColumnFooter);
 customElements.define('app-card', AppCard);
 customElements.define('app-column', AppColumn);
 customElements.define('kanban-app', KanbanApp);

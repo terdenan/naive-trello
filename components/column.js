@@ -3,12 +3,16 @@ import { createElement } from "../utils/index.js";
 
 export class AppColumn extends HTMLElement {
 
-    get class() {
-        return this.getAttribute('class');
-    }
-
-    set class(val) {
-        this.setAttribute('class', val);
+    // get class() {
+    //     return this.getAttribute('class');
+    // }
+    //
+    // set class(val) {
+    //     this.setAttribute('class', val);
+    // }
+    constructor() {
+        super()
+        this.footerIsActive = false;
     }
 
     get title() {
@@ -24,20 +28,61 @@ export class AppColumn extends HTMLElement {
     }
 
     set cards(val) {
+        const isInitial = this._cards === undefined;
         this._cards = val;
+        if (!isInitial) {
+            this._render();
+        }
     }
 
     connectedCallback() {
-        const title = this.title;
-        const cards = this.cards;
-        this._render(title, cards);
+        this._render();
     }
 
-    _render(title, cards) {
+    createCard() {
+        const cardBody = this.querySelector('.card__input').innerHTML;
+
+        if (cardBody === '') {
+            return;
+        }
+
+        this.footerIsActive = false;
+
+        this._currentNewCard.editable = false;
+        this._currentNewCard.body = cardBody;
+
+        this._render();
+        this._currentNewCard = null;
+    }
+
+    addNewCard() {
+        this.footerIsActive = true;
+        this._currentNewCard = {
+            body: '',
+            editable: true
+        };
+
+        const newCards = this.cards.slice();
+        newCards.push(this._currentNewCard);
+
+        this.cards = newCards;
+    }
+
+    removeNewCard() {
+        this.footerIsActive = false;
+        const newCards = this.cards.filter(card => card !== this._currentNewCard);
+        this.cards = newCards;
+    }
+
+    _render() {
         while (this.firstChild) {
             this.removeChild(this.firstChild);
         }
 
+        const title = this.title;
+        const cards = this.cards;
+
+        const _this = this;
         const el =
             createElement(
                 'div',
@@ -49,19 +94,19 @@ export class AppColumn extends HTMLElement {
                         'div',
                         {class: 'cards-list'},
                         null,
-                        cards.map(body => createElement('app-card', null, {body}))
+                        cards.map((card, index) => createElement('app-card', {key: index}, card))
                     ),
                     createElement(
-                        'div',
-                        {class: 'column-footer column__column-footer'},
-                        null,
-                        [
-                            createElement('i', {class: 'icon-plus'}),
-                            createElement('span', null, null, ["Добавить еще одну карточку"])
-                        ])
-
-
-                ]);
+                        'column-footer',
+                        {active: this.footerIsActive},
+                        {
+                            createCard: _this.createCard.bind(this),
+                            addNewCard: _this.addNewCard.bind(this),
+                            removeNewCard: _this.removeNewCard.bind(this)
+                        }
+                    )
+                ]
+            );
         this.appendChild(el);
     }
 
