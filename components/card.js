@@ -1,7 +1,64 @@
-import { createElement, obj2str } from "../utils/index.js";
+import { createElement, obj2str, removeChildren } from "../utils/index.js";
 
+
+function getEditableCard() {
+    let inputStyles = {};
+    let placeholder = 'Введите название карточки';
+
+    if (this.columnCreation) {
+        inputStyles = {
+            'min-height': '35px',
+            'margin-top': '8px',
+        };
+        placeholder = 'Введите название колонки';
+    }
+
+    const el = createElement(
+        'div',
+        {class: 'card cards-list__card'},
+        null,
+        [
+            createElement(
+                'div',
+                {
+                    class: 'card__input',
+                    contentEditable: true,
+                    placeholder: placeholder,
+                    style: obj2str(inputStyles)
+                },
+                null
+            )
+        ]
+    );
+
+    return el;
+}
+
+function getBasicCard() {
+    const body = this.body;
+    const el = createElement(
+        'div',
+        {class: 'card cards-list__card'},
+        null,
+        [
+            createElement(
+                'div',
+                {class: 'card__content'},
+                null,
+                [body]
+            )
+        ]
+    );
+
+    return el;
+}
 
 export class AppCard extends HTMLElement {
+
+    constructor() {
+        super();
+        this._getCard = getBasicCard.bind(this);
+    }
 
     get body() {
         return this._body;
@@ -16,8 +73,19 @@ export class AppCard extends HTMLElement {
     }
 
     set editable(val) {
+        const isInitial = this._editable === undefined;
         this._editable = val;
-        this._render();
+
+        if (val === true) {
+            this._getCard = getEditableCard.bind(this);
+        }
+        else {
+            this._getCard = getBasicCard.bind(this);
+        }
+
+        if (!isInitial) {
+            this._render();
+        }
     }
 
     connectedCallback() {
@@ -32,49 +100,9 @@ export class AppCard extends HTMLElement {
     }
 
     _render() {
-        while (this.firstChild) {
-            this.removeChild(this.firstChild);
-        }
-
-        const body = this.body;
-
-        let el;
-        if (this.editable) {
-            const inputStyles = this.inputStyles || {};
-            const placeholder = this.placeholder || 'Введите название карточки';
-            el = createElement(
-                'div',
-                {class: 'card cards-list__card'},
-                null,
-                [
-                    createElement(
-                        'div',
-                        {
-                            class: 'card__input',
-                            contentEditable: true,
-                            placeholder: placeholder,
-                            style: obj2str(inputStyles)
-                        },
-                        null
-                    )
-                ]
-            );
-        }
-        else {
-            el = createElement(
-                'div',
-                {class: 'card cards-list__card'},
-                null,
-                [
-                    createElement(
-                        'div',
-                        {class: 'card__content'},
-                        null,
-                        [body]
-                    )
-                ]
-            );
-        }
+        removeChildren(this);
+        const el = this._getCard();
         this.appendChild(el);
     }
 }
+

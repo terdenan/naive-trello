@@ -1,7 +1,8 @@
 import {
     createElement,
     insertAfter,
-    isHigherThanHalf } from "./utils/index.js";
+    isHigherThanHalf,
+    removeChildren } from "./utils/index.js";
 import { AppCard } from "./components/card.js";
 import { AppColumn } from "./components/column.js";
 import { BlankSpace } from "./components/blankSpace.js";
@@ -15,6 +16,17 @@ export class KanbanApp extends HTMLElement {
         this.columns = content;
         this.columns.push({editable: true});
         this.initDraggable();
+
+        this.onkeydown = event => {
+            if (event.key === 'Enter') {
+                event.preventDefault()
+                let cur = event.target;
+                while (cur.tagName !== 'APP-CARD') {
+                    cur = cur.parentNode;
+                }
+                cur.onEnterHandler();
+            }
+        };
     }
 
     connectedCallback() {
@@ -38,6 +50,12 @@ export class KanbanApp extends HTMLElement {
         const newColumns = this.columns.slice()
         newColumns.push({editable: true});
         this.columns = newColumns;
+        this._store()
+    }
+
+    _store() {
+        // TODO: implement storing
+        console.log(this.columns);
     }
 
     _insertCard(columnIndex) {
@@ -46,13 +64,12 @@ export class KanbanApp extends HTMLElement {
                 this.columns[columnIndex].cards = [];
             }
             this.columns[columnIndex].cards.push(card);
+            this._store()
         }).bind(this);
     }
 
     _render() {
-        while(this.firstChild) {
-            this.removeChild(this.firstChild)
-        }
+        removeChildren(this);
 
         const columns = this.columns;
         const el =
@@ -60,17 +77,15 @@ export class KanbanApp extends HTMLElement {
                 'div',
                 {class: 'app'},
                 null,
-                [
-                    ...columns.map((column, index) => createElement(
-                        'app-column',
-                        {key: index},
-                        {
-                            ...column,
-                            addNewColumn: this._addNewColumn.bind(this),
-                            insertCard: this._insertCard(index),
-                        })
-                    )
-                ]
+                columns.map((column, index) => createElement(
+                    'app-column',
+                    {key: index},
+                    {
+                        ...column,
+                        addNewColumn: this._addNewColumn.bind(this),
+                        insertCard: this._insertCard(index),
+                    })
+                )
             );
 
         this.appendChild(el);
@@ -166,6 +181,7 @@ export class KanbanApp extends HTMLElement {
         const columnKey = parseInt(column.getAttribute('key'));
         column.cards = cards;
         this.columns[columnKey].cards = cards;
+        this._store()
     }
 
     initDraggable() {

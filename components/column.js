@@ -1,10 +1,90 @@
-import { createElement } from "../utils/index.js";
+import { createElement, removeChildren } from "../utils/index.js";
 
+
+function getBasicColumn() {
+    const el =
+        createElement(
+            'div',
+            {class: 'column app__column'},
+            null,
+            [
+                createElement('div', {class: 'column__title'}, null, [this.title]),
+                createElement(
+                    'div',
+                    {class: 'cards-list column__cards-list'},
+                    null,
+                    this.cards.map((card, index) =>
+                        createElement(
+                            'app-card',
+                            {key: index},
+                            {
+                                ...card,
+                                onEnterHandler: this.onEnterHandler.bind(this)
+                            }
+                        )
+                    )
+                ),
+                createElement(
+                    'column-footer',
+                    {active: this.footerIsActive},
+                    {
+                        buttonClick: this.createCard.bind(this),
+                        footerClick: this.addEditableCard.bind(this),
+                        crossClick: this.removeNewCard.bind(this),
+                        buttonText: 'Добавить карточку',
+                        spanText: 'Добавить еще одну карточку'
+                    }
+                )
+            ]
+        );
+
+    return el;
+}
+
+function getEditableColumn() {
+    const el =
+        createElement(
+            'div',
+            {class: 'column app__column'},
+            null,
+            [
+                createElement(
+                    'div',
+                    {class: 'cards-list column__cards-list'},
+                    null,
+                    this.cards.map((card, index) =>
+                        createElement(
+                            'app-card',
+                            null,
+                            {
+                                ...card,
+                                columnCreation: true,
+                                onEnterHandler: this.onEnterHandler.bind(this)
+                            },
+                        )
+                    )
+                ),
+                createElement(
+                    'column-footer',
+                    {active: this.footerIsActive},
+                    {
+                        footerClick: this.addEditableCard.bind(this),
+                        crossClick: this.removeNewCard.bind(this),
+                        buttonClick: this.createColumn.bind(this),
+                        buttonText: 'Добавить колонку',
+                        spanText: 'Добавить еще одну колонку',
+                    }
+                )
+            ]
+        );
+    return el;
+}
 
 export class AppColumn extends HTMLElement {
 
     constructor() {
-        super()
+        super();
+        this._getColumn = getBasicColumn.bind(this);
         this.footerIsActive = false;
     }
 
@@ -14,6 +94,14 @@ export class AppColumn extends HTMLElement {
 
     set editable(val) {
         this._editable = val;
+
+        if (val === true) {
+            this._getColumn = getEditableColumn.bind(this);
+        }
+        else {
+            this._getColumn = getBasicColumn.bind(this);
+        }
+
         this._render();
     }
 
@@ -55,7 +143,7 @@ export class AppColumn extends HTMLElement {
         this._currentNewCard = null;
     }
 
-    addNewCard() {
+    addEditableCard() {
         this.footerIsActive = true;
         this._currentNewCard = {
             body: '',
@@ -85,88 +173,18 @@ export class AppColumn extends HTMLElement {
         this.addNewColumn(cardBody);
     }
 
-    _render() {
-        while (this.firstChild) {
-            this.removeChild(this.firstChild);
-        }
-
-        let el;
-        const editable = this.editable;
-        const title = this.title;
-        const cards = this.cards;
-
-        if (editable) {
-            el =
-                createElement(
-                    'div',
-                    {class: 'column app__column'},
-                    null,
-                    [
-                        createElement(
-                            'div',
-                            {class: 'cards-list column__cards-list'},
-                            null,
-                            cards.map((card, index) =>
-                                createElement(
-                                    'app-card',
-                                    {key: index},
-                                    {
-                                        ...card,
-                                        placeholder: 'Введите название колонки',
-                                        inputStyles: {
-                                            'min-height': '35px',
-                                            'margin-top': '8px',
-                                        }
-                                    }
-                                )
-                            )
-                        ),
-                        createElement(
-                            'column-footer',
-                            {active: this.footerIsActive},
-                            {
-                                footerClick: this.addNewCard.bind(this),
-                                crossClick: this.removeNewCard.bind(this),
-                                buttonClick: this.createColumn.bind(this),
-                                buttonText: 'Добавить колонку',
-                                spanText: 'Добавить еще одну колонку',
-                            }
-                        )
-                    ]
-                );
+    onEnterHandler() {
+        if (this.editable) {
+            this.createColumn();
         }
         else {
-            el =
-                createElement(
-                    'div',
-                    {class: 'column app__column'},
-                    null,
-                    [
-                        createElement('div', {class: 'column__title'}, null, [title]),
-                        createElement(
-                            'div',
-                            {class: 'cards-list column__cards-list'},
-                            null,
-                            cards.map((card, index) => createElement('app-card', {key: index}, card))
-                        ),
-                        createElement(
-                            'column-footer',
-                            {active: this.footerIsActive},
-                            {
-                                buttonClick: this.createCard.bind(this),
-                                footerClick: this.addNewCard.bind(this),
-                                crossClick: this.removeNewCard.bind(this),
-                                buttonText: 'Добавить карточку',
-                                spanText: 'Добавить еще одну карточку'
-                            }
-                        )
-                    ]
-                );
+            this.createCard();
         }
-        this.appendChild(el);
     }
 
-    attributeChangedCallback(name, oldVal, newVal) {
-        this._render();
+    _render() {
+        removeChildren(this);
+        const el = this._getColumn();
+        this.appendChild(el);
     }
 }

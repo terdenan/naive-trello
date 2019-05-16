@@ -25,8 +25,7 @@ export function createElement(type, attributes, properties, children) {
                 elem.appendChild(child);
             }
             else {
-                const textNode = document.createTextNode(child);
-                elem.appendChild(textNode);
+                elem.innerHTML = elem.innerHTML + child;
             }
 
         }
@@ -59,4 +58,10 @@ export function obj2str(obj) {
         res += `${prop}: ${obj[prop]};`
     }
     return res;
+}
+
+export function removeChildren(elem) {
+    while (elem.firstChild) {
+        elem.removeChild(elem.firstChild);
+    }
 }
