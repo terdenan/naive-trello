@@ -11,11 +11,13 @@ import content from "./content.js";
 
 
 export class KanbanApp extends HTMLElement {
+
     constructor() {
         super();
         this.columns = content;
         this.columns.push({editable: true});
         this.initDraggable();
+        this.initDraggableMobile();
 
         this.onkeydown = event => {
             if (event.key === 'Enter') {
@@ -278,6 +280,109 @@ export class KanbanApp extends HTMLElement {
 
                 this._removeBlankSpace();
                 this.onmousemove = null;
+                this._dragCard = {};
+            }).bind(this);
+        }
+    }
+
+    initDraggableMobile() {
+        this._dragCard = {};
+        this._currentBlankSpace = null;
+
+        this.ontouchstart = event => {
+            // Ignore if it's not a left-button click
+            const touch = event.touches[0];
+
+            const grabbedCard = event.target.closest('app-card');
+            const sourceColumn = event.target.closest('app-column');
+
+            if (!grabbedCard || grabbedCard.editable) {
+                return;
+            }
+
+            const grabbedCardKey = parseInt(grabbedCard.getAttribute('key'));
+            const leftCards = sourceColumn.cards.filter((card, index) => {
+                return index !== grabbedCardKey;
+            });
+
+            // Storing grabbed card
+            const grabbedCardBoundaries = this._getElemBoundaries(grabbedCard);
+            this._dragCard = {
+                elem: grabbedCard,
+                nextSibling: grabbedCard.nextElementSibling,
+
+                shiftX: touch.pageX - grabbedCardBoundaries.left,
+                shiftY: touch.pageY - grabbedCardBoundaries.top,
+                width: grabbedCardBoundaries.width,
+                height: grabbedCardBoundaries.height,
+                stlye: {
+                    position: grabbedCard.style.position || '',
+                    zIndex: grabbedCard.style.zIndex || '',
+                    width: grabbedCard.style.width || ''
+                }
+            };
+
+            this._insertBlankSpace(touch);
+
+            function moveTo(event) {
+                grabbedCard.style.left = event.pageX - this._dragCard.shiftX + 'px';
+                grabbedCard.style.top = event.pageY - this._dragCard.shiftY + 'px';
+            }
+
+            grabbedCard.classList.add('card_grabbed');
+            grabbedCard.style.width = grabbedCardBoundaries.width + 'px';
+            moveTo.call(this, touch)
+
+            this.ontouchmove = (function(event) {
+                event.preventDefault();
+
+                const touch = event.touches[0];
+                this._touch = touch;
+
+                moveTo.call(this, touch);
+                this._insertBlankSpace(touch);
+            }).bind(this);
+
+            this.ontouchend = (function (event) {
+                if (!this._dragCard.elem) {
+                    return;
+                }
+                // Restoring grabbed card
+                grabbedCard.classList.remove('card_grabbed')
+                grabbedCard.style = this._dragCard.style;
+
+                const touch = this._touch;
+                const targetColumn = this._findClosestColumn(touch);
+                const closestCard = this._findClosestCard(targetColumn, grabbedCard, touch);
+
+                const sourceAttributes = grabbedCard.sourceAttributes();
+
+                if (closestCard === null) {
+                    this._updateColumn(sourceColumn, leftCards);
+                    this._updateColumn(targetColumn, [sourceAttributes])
+                }
+                else {
+                    const isHigher = isHigherThanHalf(closestCard, touch);
+                    let closestCardKey = parseInt(closestCard.getAttribute('key'));
+
+                    this._updateColumn(sourceColumn, leftCards);
+
+                    const newCards = targetColumn.cards.slice();
+                    if (targetColumn === sourceColumn && grabbedCardKey < closestCardKey) {
+                        closestCardKey -= 1;
+                    }
+                    if (isHigher || closestCard.editable) {
+                        newCards.splice(closestCardKey , 0, sourceAttributes);
+                    }
+                    else {
+                        newCards.splice(closestCardKey + 1, 0, sourceAttributes);
+                    }
+
+                    this._updateColumn(targetColumn, newCards)
+                }
+
+                this._removeBlankSpace();
+                this.ontouchmove = null;
                 this._dragCard = {};
             }).bind(this);
         }

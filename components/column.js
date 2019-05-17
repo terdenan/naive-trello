@@ -26,8 +26,9 @@ function getBasicColumn() {
                 ),
                 createElement(
                     'column-footer',
-                    {active: this.footerIsActive},
+                    {},
                     {
+                        active: this.footerIsActive,
                         buttonClick: this.createCard.bind(this),
                         footerClick: this.addEditableCard.bind(this),
                         crossClick: this.removeNewCard.bind(this),
@@ -66,8 +67,9 @@ function getEditableColumn() {
                 ),
                 createElement(
                     'column-footer',
-                    {active: this.footerIsActive},
+                    {},
                     {
+                        active: this.footerIsActive,
                         footerClick: this.addEditableCard.bind(this),
                         crossClick: this.removeNewCard.bind(this),
                         buttonClick: this.createColumn.bind(this),
@@ -154,6 +156,9 @@ export class AppColumn extends HTMLElement {
         newCards.push(this._currentNewCard);
 
         this.cards = newCards;
+
+        const cardInput = this.querySelector('app-card:last-child .card__input');
+        cardInput.focus();
     }
 
     removeNewCard() {

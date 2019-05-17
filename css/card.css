@@ -1,3 +1,7 @@
+app-card {
+    cursor: grab;
+}
+
 .card {
     background: #FFFFFF;
     box-shadow: 0px 1px 4px rgba(9, 45, 66, 0.25);
@@ -9,6 +13,11 @@
     position: absolute;
     z-index: 100;
     transform: rotate(5deg);
+    cursor: grabbing;
+}
+
+.card_editable {
+    cursor: default;
 }
 
 .card__content {

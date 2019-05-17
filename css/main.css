@@ -52,6 +52,7 @@ html {
     color: #FFFFFF;
     font-weight: bold;
     border: none;
+    cursor: pointer;
 }
 
 .button:hover {

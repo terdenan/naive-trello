@@ -15,7 +15,7 @@ function getEditableCard() {
 
     const el = createElement(
         'div',
-        {class: 'card cards-list__card'},
+        {class: 'cards-list__card card card_editable'},
         null,
         [
             createElement(

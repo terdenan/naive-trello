@@ -3,11 +3,13 @@
     background: #DFE3E6;
     color: #6B808C;
     border-radius: 3px;
+    cursor: pointer;
 }
 
 .column-footer_active {
     justify-content: space-between;
     align-items: center;
+    cursor: default;
 }
 
 .column-footer:hover {
@@ -20,4 +22,8 @@
 
 .column-footer__icon {
     margin-right: 8px;
+}
+
+.column-footer__icon-cross {
+    cursor: pointer;
 }
