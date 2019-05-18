@@ -2,7 +2,8 @@ import {
     createElement,
     insertAfter,
     isHigherThanHalf,
-    removeChildren } from "./utils/index.js";
+    removeChildren,
+    cloneObject } from "./utils/index.js";
 import { AppCard } from "./components/card.js";
 import { AppColumn } from "./components/column.js";
 import { BlankSpace } from "./components/blankSpace.js";
@@ -14,10 +15,10 @@ export class KanbanApp extends HTMLElement {
 
     constructor() {
         super();
-        this.columns = content;
+        this.columns = this._getContent();
         this.columns.push({editable: true});
-        this.initDraggable();
-        this.initDraggableMobile();
+        this._initDraggable();
+        this._initDraggableMobile();
 
         this.onkeydown = event => {
             if (event.key === 'Enter') {
@@ -29,6 +30,22 @@ export class KanbanApp extends HTMLElement {
                 cur.onEnterHandler();
             }
         };
+    }
+
+    _getContent() {
+        const storageContent = JSON.parse(localStorage.getItem('kanbanAppContent'));
+        return storageContent || content;
+    }
+
+    _store() {
+        const sourceColumns = Object.values(cloneObject(this.columns));
+        const columnsToStore = Array.prototype.filter.call(sourceColumns, c => {
+            return c.editable !== true
+        })
+        columnsToStore.forEach((column, index, columnsToStore) => {
+            columnsToStore[index].cards = column.cards.filter(card => card.editable !== true);
+        });
+        localStorage.setItem('kanbanAppContent', JSON.stringify(columnsToStore));
     }
 
     connectedCallback() {
@@ -48,24 +65,20 @@ export class KanbanApp extends HTMLElement {
     }
 
     _addNewColumn(title) {
-        this.columns[this.columns.length - 1] = { title };
+        this.columns[this.columns.length - 1] = { title, cards: [] };
         const newColumns = this.columns.slice()
         newColumns.push({editable: true});
         this.columns = newColumns;
         this._store()
     }
 
-    _store() {
-        // TODO: implement storing
-        console.log(this.columns);
-    }
-
     _insertCard(columnIndex) {
         return (function(card) {
-            if (this.columns[columnIndex].cards === undefined) {
-                this.columns[columnIndex].cards = [];
+            const targetColumn = this.columns[columnIndex];
+            if (targetColumn.cards === undefined) {
+                targetColumn.cards = [];
             }
-            this.columns[columnIndex].cards.push(card);
+            targetColumn.cards.push(card);
             this._store()
         }).bind(this);
     }
@@ -181,12 +194,13 @@ export class KanbanApp extends HTMLElement {
 
     _updateColumn(column, cards) {
         const columnKey = parseInt(column.getAttribute('key'));
+        const newColumns = this.columns.slice();
         column.cards = cards;
-        this.columns[columnKey].cards = cards;
+        this.columns[columnKey].cards = cards.filter(c => c.editable !== true);
         this._store()
     }
 
-    initDraggable() {
+    _initDraggable() {
         this._dragCard = {};
         this._currentBlankSpace = null;
 
@@ -285,7 +299,7 @@ export class KanbanApp extends HTMLElement {
         }
     }
 
-    initDraggableMobile() {
+    _initDraggableMobile() {
         this._dragCard = {};
         this._currentBlankSpace = null;
 

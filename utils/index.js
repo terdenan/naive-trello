@@ -65,3 +65,19 @@ export function removeChildren(elem) {
         elem.removeChild(elem.firstChild);
     }
 }
+
+export function cloneObject(obj) {
+    const clone = {};
+    for(let i in obj) {
+        if (obj[i] != null &&  typeof(obj[i]) === "object") {
+            clone[i] = cloneObject(obj[i]);
+        }
+        else {
+            clone[i] = obj[i];
+        }
+    }
+    if (obj instanceof Array) {
+        return Object.values(clone);
+    }
+    return clone;
+}
