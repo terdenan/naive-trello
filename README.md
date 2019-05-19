@@ -1,5 +1,7 @@
 # VK Internship Test Task
 
+Check it out here [https://terdenan.github.io/naive-trello/](https://terdenan.github.io/naive-trello/)
+
 Run project: 
 ```
 $ npx serve
